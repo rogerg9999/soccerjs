@@ -1,6 +1,5 @@
 var request = require('request'),
     xmltojs = require('libxml-to-js'),
-    client = require('client-http'), 
     qs = require('querystring'),
     rest = require('rest');
 
