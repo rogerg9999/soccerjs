@@ -66,4 +66,3 @@ var standings = new cronJob("30  0 0 * * *", function(){soccer.getLeagueStanding
 //Every month at day 1 and hour 01:10:30
 var fixtures =  new cronJob("30 10 1 1 * *", function(){soccer.getFixturesByLeagueAndSeason()}, null, true);
 
-

@@ -12,7 +12,8 @@ function Soccer(){
 				ApiKey: "BHWYWCDUWXQWYREGACHXMFULOPFNAGNNZCKNXJOLOJFRXZCRLL",
 				ids: {
 					standings: "TeamLeagueStanding",
-					match: "Match"},
+					match: "Match",
+					id: "Id"},
 				methods: {
 				 	GetLeagueStandingsBySeason : "GetLeagueStandingsBySeason",
 				 	GetLiveScore : "GetLiveScore",
@@ -22,11 +23,11 @@ function Soccer(){
 }
 
 Soccer.prototype.getFixturesByLeagueAndSeason = function(){
-	this._getMethodByLeagueAndSeason(this.xmlsoccer.methods.GetFixturesByLeagueAndSeason, this.xmlsoccer.ids.match, consts.firebase.keys.fixtures, 0, 300);
+	this._getMethodByLeagueAndSeason(this.xmlsoccer.methods.GetFixturesByLeagueAndSeason, this.xmlsoccer.ids.match, consts.firebase.keys.fixtures, 0, this.xmlsoccer.ids.id, 300);
 };
 
 Soccer.prototype.getLeagueStandingsBySeason = function(){
-	this._getMethodByLeagueAndSeason(this.xmlsoccer.methods.GetLeagueStandingsBySeason, this.xmlsoccer.ids.standings, consts.firebase.keys.standings, 0, 300);
+	this._getMethodByLeagueAndSeason(this.xmlsoccer.methods.GetLeagueStandingsBySeason, this.xmlsoccer.ids.standings, consts.firebase.keys.standings, 0, null, 300);
 };
 
 Soccer.prototype.getAllLeagues = function(){
@@ -54,11 +55,11 @@ Soccer.prototype.getLiveScore = function(){
 				"ApiKey": this.xmlsoccer.ApiKey
 				}};
 	var ref = fireRef.child(consts.firebase.keys.liveScores);
-	this._doPostToXmlSoccer(this.xmlsoccer.methods.GetLiveScore , args, this.xmlsoccer.match, ref);
+	this._doPostToXmlSoccer(this.xmlsoccer.methods.GetLiveScore , args, this.xmlsoccer.ids.match, ref, this.xmlsoccer.ids.id);
 }
 
 
-Soccer.prototype._getMethodByLeagueAndSeason = function(method, attr, root, done, time, key){
+Soccer.prototype._getMethodByLeagueAndSeason = function(method, attr, root, done,  key, time){
 	var self = this;
 	var total = self.leagues.length;
 	var args= {form:{
@@ -75,7 +76,7 @@ Soccer.prototype._getMethodByLeagueAndSeason = function(method, attr, root, done
 	    	done++;
 			if(done < total)
 				setTimeout(function(){
-					self._getMethodByLeagueAndSeason(method, attr, root, done, time, key);
+					self._getMethodByLeagueAndSeason(method, attr, root, done, key, time);
 				}, time);	
     	}
 }
@@ -85,8 +86,8 @@ Soccer.prototype._doPostToXmlSoccer = function(method, args, attr, ref, key){
 	var self = this;
 	var url = this.xmlsoccer.url + method;
     fn.post(url, args, function(error, body){
-    	console.log(body);
     	fn.parseXml(body, attr, function(objects){
+    		console.log(objects);
     		if(objects != null){
     			fn.writeArrayToFirebase(ref, objects, key);
     		}

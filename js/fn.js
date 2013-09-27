@@ -27,8 +27,10 @@ var get = function(url, params, cb){
 }
 
 var writeArrayToFirebase = function(ref, objects, key){
-  if(objects==null)
+  if(objects==null){
+    console.log("writeArrayToFirebase objetcs is null");
     return;
+  }
   for(var i = 0; i< objects.length; i++){
     var obj = sanitizeObject(objects[i]);
     var refObj = (key!= null && obj[key]!= null)? ref.child(obj[key]) : ref.child(i+1);
@@ -39,17 +41,17 @@ var writeArrayToFirebase = function(ref, objects, key){
 var parseXml= function(body, resultAttr, cb){
   var self = this;
   var objects;
-  console.log(body);
   xmltojs(body, function (err, result) {
     if(err){
       console.log(err);
       return;
     }
       objects = result[resultAttr];
-  });
-    if(cb){
+
       cb(objects);
-    }
+
+  });
+    
 }
 
 
