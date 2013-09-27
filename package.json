@@ -1,6 +1,6 @@
 {
   "name": "soccer-xmlscore",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "dependencies": {
     "libxml-to-js": ">=0.3.11",
     "request": ">=2.27.0",
