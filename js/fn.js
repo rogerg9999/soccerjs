@@ -1,8 +1,6 @@
 var request = require('request'),
     xmltojs = require('libxml-to-js'),
-    qs = require('querystring'),
-    rest = require('rest');
-
+    qs = require('querystring');
 
 
 var post = function(url, params, cb){
