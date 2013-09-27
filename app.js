@@ -52,17 +52,18 @@ function cronTask(){
 
 
 //Every minute at XX:00
-var liveScores = new cronJob("0 * * * * *", function(){soccer.getLiveScore()}, null, true);
+//var liveScores = new cronJob("0 * * * * *", function(){soccer.getLiveScore()}, null, true);
 
 //Every hour at XX:10:30
-var headlines = new cronJob("30 10 * * * *", function(){espn.getLeagueHeadlines(0, espn.langs.en)}, null, true);
+//var headlines = new cronJob("30 10 * * * *", function(){espn.getLeagueHeadlines(0, espn.langs.en)}, null, true);
 
 //Every hpur at XX:15:30
-var headlines = new cronJob("30 15 * * * *", function(){espn.getLeagueHeadlines(0, espn.langs.es)}, null, true);
+//var headlines = new cronJob("30 15 * * * *", function(){espn.getLeagueHeadlines(0, espn.langs.es)}, null, true);
 
 //Every day at 00:00:30
-var standings = new cronJob("30  0 0 * * *", function(){soccer.getLeagueStandingsBySeason()}, null, true);
+//var standings = new cronJob("30  0 0 * * *", function(){soccer.getLeagueStandingsBySeason()}, null, true);
 
 //Every month at day 1 and hour 01:10:30
-var fixtures =  new cronJob("30 10 1 1 * *", function(){soccer.getFixturesByLeagueAndSeason()}, null, true);
+//var fixtures =  new cronJob("30 10 1 1 * *", function(){soccer.getFixturesByLeagueAndSeason()}, null, true);
 
+espn.getLeagueHeadlines(0, espn.langs.es);

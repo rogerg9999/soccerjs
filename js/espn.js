@@ -22,7 +22,7 @@ Espn.prototype.doGetToEspn = function(league, language, ref, attr, cb){
 	this.getHeadlines(league, language, function(data){
 		console.log(data);
 		if(data!=null)
-			fn.writeArrayToFirebase(ref, data[attr]);
+			fn.writeArrayToFirebase(ref, data[attr], "id");
 		cb();
 	});
 
