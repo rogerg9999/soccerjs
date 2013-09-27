@@ -1,0 +1,21 @@
+{
+  "name": "soccer-xmlscore",
+  "version": "0.0.1",
+  "dependencies": {
+    "libxml-to-js": ">=0.3.11",
+    "request": ">=2.27.0",
+    "firebase": ">=0.6.3",
+    "log4js": ">=0.6.8",
+    "underscore": ">=1.5.2",
+    "querystring": ">=0.2.0",
+    "util": ">=0.4.9",
+    "express": ">=3.4.0",
+    "async": ">=0.2.9",
+    "kue": ">=0.6.2",
+    "cron": ">=1.0.1"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.3.x"
+  }
+}
