@@ -41,6 +41,7 @@ function cronTask(){
 });
 }
 
+
 //jobs.promote(3000);
 
 //jobs.process('headlines', cronTask());
@@ -61,8 +62,8 @@ var headlines = new cronJob("30 10 * * * *", function(){espn.getLeagueHeadlines(
 var headlines = new cronJob("30 15 * * * *", function(){espn.getLeagueHeadlines(0, espn.langs.es)}, null, true);
 
 //Every day at 00:00:30
-var standings = new cronJob("30  0 0 * * *", function(){soccer.getLeagueStandingsBySeason()}, null, true);
+var standings = new cronJob("30  0 0 * * *", function(){soccer.getStandings(0, "1314")}, null, true);
 
 //Every month at day 1 and hour 01:10:30
-var fixtures =  new cronJob("30 10 1 1 * *", function(){soccer.getFixturesByLeagueAndSeason()}, null, true);
+var fixtures =  new cronJob("30 10 1 1 * *", function(){soccer.getFixtures(0, "1314")}, null, true);
 

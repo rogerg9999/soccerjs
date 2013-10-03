@@ -26,33 +26,35 @@ var get = function(url, params, cb){
   
 }
 
-var writeArrayToFirebase = function(ref, objects, key){
+var writeArrayToFirebase = function(ref, objects, key, lang){
   if(objects==null){
     console.log("writeArrayToFirebase objetcs is null");
     return;
   }
   for(var i = 0; i< objects.length; i++){
     var obj = sanitizeObject(objects[i]);
+    if(lang)
+      obj.lang = lang;
     var refObj = (key!= null && obj[key]!= null)? ref.child(obj[key]) : ref.child(i+1);
     refObj.update(obj);
   }
 }
 
 var parseXml= function(body, resultAttr, cb){
-  var self = this;
-  var objects;
   xmltojs(body, function (err, result) {
     if(err){
       console.log(err);
+      cb(null);
       return;
     }
-      objects = result[resultAttr];
+      var objects = result[resultAttr];
 
       cb(objects);
 
   });
-    
 }
+
+
 
 
 var sanitizeObject = function(obj) {

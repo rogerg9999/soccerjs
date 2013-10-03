@@ -8,6 +8,8 @@ var fn 	 = require('./fn.js'),
 
 var URL = "http://api.espn.com/v1/sports/soccer/%s/news/?";
 
+var fireRef = new Firebase(consts.firebase.url);
+
 function Espn(){
 	this.leagues = _.keys(consts.leagues);
 	this.key = "7zccjzyeu5f9937c5srpftr6";
@@ -22,27 +24,52 @@ Espn.prototype.doGetToEspn = function(league, language, ref, attr, cb){
 	this.getHeadlines(league, language, function(data){
 		console.log(data);
 		if(data!=null)
-			fn.writeArrayToFirebase(ref, data[attr], "id");
+			var fiew = new Firebase(consts.firebase.url).child(headlines);
+			fn.writeArrayToFirebase(ref, data[attr], "id", language);
 		cb();
+	});
+
+}
+
+function writeToFirebase(headline, language, league){
+	fireRef.child("headlines").child(headline["id"]).update(headline, function(error){
+		if(!error){
+			fireRef.child(language).child("headlines").child(headline["id"]).set(true);
+			fireRef.child("news").child(language).child(league).child(headline["id"]).set(true);
+		}
+	});
+}
+
+Espn.prototype.writeHeadlines = function(index, language, callback){
+	var self = this;
+	var leagueId = this.leagues[index];
+	var total = this.leagues.length;
+	var league = consts.leagues[leagueId];
+	self.getHeadlines(leagueId, language, function(data){
+		if(data != null){
+			var headlines = data["headlines"];
+			_.map(headlines, function(headline){
+				writeToFirebase(headline, language, league);
+			});
+
+			callback();
+		}
+
 	});
 
 }
 
 Espn.prototype.getLeagueHeadlines = function(index, language){
 	var self = this;
-	var leagueId = this.leagues[index];
 	var total = this.leagues.length;
-	var league = consts.leagues[leagueId];
-	var ref = new Firebase(consts.firebase.url).child(consts.firebase.keys.leagues).child(league).child(consts.firebase.keys.headlines);
-	self.doGetToEspn(leagueId, language, ref, "headlines", function(){
+	this.writeHeadlines(index, language, function(){
 		index++;
 		if(index<total){
 			setTimeout(function(){
 				self.getLeagueHeadlines(index, language);
 			}, 500);
 		}
-			
-		});
+	});
 }
 
 var getJSON = function(options, onResult)

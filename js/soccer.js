@@ -1,6 +1,7 @@
 var	Firebase= require('firebase'),
 	_ = require('underscore'),
 	fn = require('./fn.js'),
+	xmltojs = require('libxml-to-js'),
 	consts = require('./consts.js');
 
 var fireRef = new Firebase(consts.firebase.url);
@@ -22,13 +23,14 @@ function Soccer(){
 				 }};
 }
 
-Soccer.prototype.getFixturesByLeagueAndSeason = function(){
-	this._getMethodByLeagueAndSeason(this.xmlsoccer.methods.GetFixturesByLeagueAndSeason, this.xmlsoccer.ids.match, consts.firebase.keys.fixtures, 0, this.xmlsoccer.ids.id, 300);
-};
+Soccer.prototype.writeLeagues = function(){
+	var ref = fireRef.child("leagues");
+	_.map(this.leagues, function(league){
+		console.log(league);
+		ref.child(league).set(true);
+	});
+}
 
-Soccer.prototype.getLeagueStandingsBySeason = function(){
-	this._getMethodByLeagueAndSeason(this.xmlsoccer.methods.GetLeagueStandingsBySeason, this.xmlsoccer.ids.standings, consts.firebase.keys.standings, 0, null, 300);
-};
 
 Soccer.prototype.getAllLeagues = function(){
 	var self = this;
@@ -36,8 +38,9 @@ Soccer.prototype.getAllLeagues = function(){
 				"ApiKey": this.xmlsoccer.ApiKey
 				}};
     fn.post(this.xmlsoccer.methods.getAllLeagues, args, function(error, body){
-		fn.parseXml(body, "LEAGUE", function(objects){
+		fn.parseXml(body, "League", function(objects){
 			if(objects != null){
+				console.log(objects);
 				var allLeagues = [];
 				_.map(objects, function(o){
 					allLeagues.push[o.Name];
@@ -52,46 +55,119 @@ Soccer.prototype.getAllLeagues = function(){
 Soccer.prototype.getLiveScore = function(){
 	var self = this;
 	var args= {form:{
-				"ApiKey": this.xmlsoccer.ApiKey
+				"ApiKey": self.xmlsoccer.ApiKey
 				}};
-	var ref = fireRef.child(consts.firebase.keys.liveScores);
-	this._doPostToXmlSoccer(this.xmlsoccer.methods.GetLiveScore , args, this.xmlsoccer.ids.match, ref, this.xmlsoccer.ids.id);
+	self.doPost(self.xmlsoccer.methods.GetLiveScore, args, function(data){
+		if(data!=null){
+			var livescores = data[self.xmlsoccer.ids.match];
+			_.map(livescores, function(livescore){
+				self.writeLivescoreToFirebase(fn.sanitizeObject(livescore));
+			});	
+		}	
+
+	});
 }
 
 
-Soccer.prototype._getMethodByLeagueAndSeason = function(method, attr, root, done,  key, time){
+Soccer.prototype.writeLivescoreToFirebase = function(livescore){
+	fireRef.child("live").child(livescore["Id"]).update(livescore, function(error){
+		if(!error){
+			fireRef.child("fixtures").child(livescore["Id"]).once('value', function(snap){
+				var data = snap.val();
+				console.log(data);
+				if(data.Round)
+					fireRef.child("actual").child(data.League).child(data.Round).set(true);
+			});
+		}
+	});
+}
+
+
+Soccer.prototype.getStandings = function(index, season){
 	var self = this;
+	var league = self.leagues[index];
 	var total = self.leagues.length;
 	var args= {form:{
 				"ApiKey": this.xmlsoccer.ApiKey,
-				"league": "",
-				"seasonDateString" : "1314"
+				"league": league,
+				"seasonDateString" : season
 				}};
-	var leaguesRef = fireRef.child(consts.firebase.keys.leagues);
-	args.form.league = this.leagues[done];
-	var ref = leaguesRef.child(args.form.league).child(root);
+	self.doPost(this.xmlsoccer.methods.GetLeagueStandingsBySeason, args, function(data){
+		console.log(data);
+		if(data!=null){
+			var standings = data[self.xmlsoccer.ids.standings];
+			if(standings){
+				for(var i=0; i<standings.length; i++){
+				var standing = standings[i];
+				if(standing!=null)
+					self.writeStandingToFirebase(standing, league, season, i+1);
+				}
+			}
+			
+		}
 
-	self._doPostToXmlSoccer(method, args, attr, ref, key);
-    	if(time){
-	    	done++;
-			if(done < total)
-				setTimeout(function(){
-					self._getMethodByLeagueAndSeason(method, attr, root, done, key, time);
-				}, time);	
-    	}
+		index++;
+		if(index < total){
+			setTimeout(function(){
+				self.getStandings(index, season);
+			}, 300);
+		}
+	});
+}
+
+Soccer.prototype.writeStandingToFirebase = function(standing, league, season, index){
+	fireRef.child("standings").child(season).child(league).child(index).update(standing);
+}
+
+Soccer.prototype.getFixtures = function(index, season){
+	var self = this;
+	var league = self.leagues[index];
+	var total = self.leagues.length;
+	var args= {form:{
+				"ApiKey": this.xmlsoccer.ApiKey,
+				"league": league,
+				"seasonDateString" : season
+				}};
+	self.doPost(this.xmlsoccer.methods.GetFixturesByLeagueAndSeason, args, function(data){
+		if(data!=null){
+			var fixtures = data[self.xmlsoccer.ids.match];
+			_.map(fixtures, function(fixture){
+				if(fixture!=null && fixture["Id"])
+					self.writeFixtureToFirebase(fixture, league, season);
+			});
+		}
+
+		index++;
+		if(index < total){
+			setTimeout(function(){
+				self.getFixtures(index, season);
+			}, 300);
+		}
+	});
 }
 
 
-Soccer.prototype._doPostToXmlSoccer = function(method, args, attr, ref, key){
+Soccer.prototype.writeFixtureToFirebase = function(fixture, league, season){
+	fireRef.child("fixtures").child(fixture["Id"]).update(fn.sanitizeObject(fixture), function(error){
+		if(!error){
+			console.log(fixture);
+			if(fixture["Round"])
+				fireRef.child("matches").child(season).child(league).child(fixture["Round"]).child(fixture["Id"]).set(true);
+			else
+				fireRef.child("matches").child(season).child(league).child(fixture["Id"]).set(true);
+		}
+	});
+};
+
+
+Soccer.prototype.doPost = function(method, args, callback){
 	var self = this;
 	var url = this.xmlsoccer.url + method;
-    fn.post(url, args, function(error, body){
-    	fn.parseXml(body, attr, function(objects){
-    		console.log(objects);
-    		if(objects != null){
-    			fn.writeArrayToFirebase(ref, objects, key);
-    		}
-    	});
+	fn.post(url, args, function(error, body){
+		xmltojs(body, function (err, result) {
+			callback(result);
+		});
+		
 	});
 }
 

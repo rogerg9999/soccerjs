@@ -24,6 +24,7 @@ var leagues = {
             "ita.2": "Serie B"
           }; 
 
+
 var firebase = {url: "https://r0gerg.firebaseio.com/",
 			    keys: {
 			    	leagues: "leagues",
