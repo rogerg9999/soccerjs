@@ -32,9 +32,11 @@ Espn.prototype.doGetToEspn = function(league, language, ref, attr, cb){
 }
 
 function writeToFirebase(headline, language, league){
+	if(!headline["headline"])
+		return;
 	var d = new Date(headline["published"]);
 	var priority = d.getTime();
-	fireRef.child("headlines").child(headline["id"]).setWithPriority(headline, priority,function(error){
+	fireRef.child("headlines").child(headline["id"]).update(headline, function(error){
 		if(!error){
 			fireRef.child(language).child("headlines").child(headline["id"]).setWithPriority(true, priority);
 			fireRef.child("news").child(language).child(league).child(headline["id"]).setWithPriority(true, priority);
@@ -48,6 +50,7 @@ Espn.prototype.writeHeadlines = function(index, language, callback){
 	var total = this.leagues.length;
 	var league = consts.leagues[leagueId];
 	self.getHeadlines(leagueId, language, function(data){
+		console.log(data);
 		if(data != null){
 			var headlines = data["headlines"];
 			_.map(headlines, function(headline){
@@ -103,7 +106,7 @@ var getJSON = function(options, onResult)
 
 	Espn.prototype.getHeadlines = function(leagueName, language, callback) {
 		var query = querystring.stringify({ apikey: this.key, limit: 50});
-		var path = "/v1/sports/soccer/" + leagueName + "/news/headlines/top/?lang="+language + "&" + query;
+		var path = "/v1/sports/soccer/" + leagueName + "/news/?lang="+language + "&" + query;
 		var host = "api.espn.com";
 		
 
