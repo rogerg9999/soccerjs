@@ -78,7 +78,7 @@ Soccer.prototype.writeLivescoreToFirebase = function(livescore){
 			fireRef.child("fixtures").child(livescore["Id"]).once('value', function(snap){
 				var data = snap.val();
 				console.log(data);
-				if(data.Round)
+				if(data!= null && data.Round)
 					fireRef.child("actual").child(data.League).child(data.Round).set(true);
 			});
 		}
