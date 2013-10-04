@@ -61,7 +61,8 @@ Soccer.prototype.getLiveScore = function(){
 		if(data!=null){
 			var livescores = data[self.xmlsoccer.ids.match];
 			_.map(livescores, function(livescore){
-				self.writeLivescoreToFirebase(fn.sanitizeObject(livescore));
+				if(livescore!=null && livescore["Id"])
+					self.writeLivescoreToFirebase(fn.sanitizeObject(livescore));
 			});	
 		}	
 
@@ -70,7 +71,9 @@ Soccer.prototype.getLiveScore = function(){
 
 
 Soccer.prototype.writeLivescoreToFirebase = function(livescore){
-	fireRef.child("live").child(livescore["Id"]).update(livescore, function(error){
+	var d = new Date(livescore["Date"]);
+	var priority = d.getTime();
+	fireRef.child("live").child(livescore["Id"]).setWithPriority(livescore, priority, function(error){
 		if(!error){
 			fireRef.child("fixtures").child(livescore["Id"]).once('value', function(snap){
 				var data = snap.val();
@@ -148,6 +151,8 @@ Soccer.prototype.getFixtures = function(index, season){
 
 
 Soccer.prototype.writeFixtureToFirebase = function(fixture, league, season){
+	if(!fixture["Id"])
+		return;
 	fireRef.child("fixtures").child(fixture["Id"]).update(fn.sanitizeObject(fixture), function(error){
 		if(!error){
 			console.log(fixture);
