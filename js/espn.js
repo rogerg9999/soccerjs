@@ -103,7 +103,7 @@ var getJSON = function(options, onResult)
 
 	Espn.prototype.getHeadlines = function(leagueName, language, callback) {
 		var query = querystring.stringify({ apikey: this.key, limit: 50});
-		var path = "/v1/sports/soccer/" + leagueName + "/news/?lang="+language + "&" + query;
+		var path = "/v1/sports/soccer/" + leagueName + "/news/headlines/top/?lang="+language + "&" + query;
 		var host = "api.espn.com";
 		
 
