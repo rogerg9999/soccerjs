@@ -58,7 +58,7 @@ var liveScores = new cronJob("0 * * * * *", function(){soccer.getLiveScore()}, n
 //Every hour at XX:10:30
 var headlines = new cronJob("30 10 * * * *", function(){espn.getLeagueHeadlines(0, espn.langs.en)}, null, true);
 
-//Every hpur at XX:15:30
+//Every hour at XX:15:30
 var headlines = new cronJob("30 15 * * * *", function(){espn.getLeagueHeadlines(0, espn.langs.es)}, null, true);
 
 //Every day at 00:00:30

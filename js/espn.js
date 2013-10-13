@@ -32,14 +32,15 @@ Espn.prototype.doGetToEspn = function(league, language, ref, attr, cb){
 }
 
 function writeToFirebase(headline, language, league){
-	if(!headline["headline"])
+	if(!headline["headline"] || !headline['images'] || !headline.images[0])
 		return;
 	var d = new Date(headline["published"]);
 	var priority = d.getTime();
 	fireRef.child("headlines").child(headline["id"]).update(headline, function(error){
 		if(!error){
 			fireRef.child(language).child("headlines").child(headline["id"]).setWithPriority(true, priority);
-			fireRef.child("news").child(language).child(league).child(headline["id"]).setWithPriority(true, priority);
+			fireRef.child("news").child(language).child(league).child(headline["id"]).set(true);
+			fireRef.child("news").child(language).child(league).child(headline["id"]).setPriority(priority);
 		}
 	});
 }

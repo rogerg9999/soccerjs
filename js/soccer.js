@@ -73,16 +73,7 @@ Soccer.prototype.getLiveScore = function(){
 Soccer.prototype.writeLivescoreToFirebase = function(livescore){
 	var d = new Date(livescore["Date"]);
 	var priority = d.getTime();
-	fireRef.child("live").child(livescore["Id"]).setWithPriority(livescore, priority, function(error){
-		if(!error){
-			fireRef.child("fixtures").child(livescore["Id"]).once('value', function(snap){
-				var data = snap.val();
-				console.log(data);
-				if(data!= null && data.Round)
-					fireRef.child("actual").child(data.League).child(data.Round).set(true);
-			});
-		}
-	});
+	fireRef.child("live").child(livescore["Id"]).setWithPriority(livescore, priority);
 }
 
 
@@ -153,11 +144,15 @@ Soccer.prototype.getFixtures = function(index, season){
 Soccer.prototype.writeFixtureToFirebase = function(fixture, league, season){
 	if(!fixture["Id"])
 		return;
+	var d = new Date(fixture["Date"]);
+	var priority = d.getTime();
 	fireRef.child("fixtures").child(fixture["Id"]).update(fn.sanitizeObject(fixture), function(error){
 		if(!error){
 			console.log(fixture);
-			if(fixture["Round"])
+			if(fixture["Round"]){
 				fireRef.child("matches").child(season).child(league).child(fixture["Round"]).child(fixture["Id"]).set(true);
+				fireRef.child("matches").child(season).child(league).child(fixture["Round"]).setPriority(priority);
+			}
 			else
 				fireRef.child("matches").child(season).child(league).child(fixture["Id"]).set(true);
 		}
